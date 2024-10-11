@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+}
+
+.form {
+    margin-bottom: 20px;
+}
+
+.form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.form button:hover {
+    background-color: #0056b3;
+}
+
+.qr-code img {
+    max-width: 100%;
+    display: none;
+    margin: 20px 0;
+}
+
+.reset-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+}
+
+.reset-btn:hover {
+    background-color: #c82333;
+}
+
+.wrapper.active img {
+    display: block;
+}
+
+.wrapper.active .reset-btn {
+    display: block;
+}
+
+.wrapper .form button.processing {
+    background-color: #ffc107;
+    cursor: wait;
+}
+
+.wrapper .form button.processing:hover {
+    background-color: #e0a800;
+}
+
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="form">
+            <h2>QR Code Generator</h2>
+            <input type="text" placeholder="Enter text or URL">
+            <button>Generate QR Code</button>
+        </div>
+        <div class="qr-code">
+            <img src="" alt="QR Code will appear here">
+        </div>
+        <button id="resetBtn" class="reset-btn">Reset</button>
+    </div>
+
+    <script >
+        const wrapper = document.querySelector(".wrapper"),
+  qrInput = wrapper.querySelector(".form input"),
+  generateBtn = wrapper.querySelector(".form button"),
+  qrImg = wrapper.querySelector(".qr-code img"),
+  resetBtn = document.getElementById("resetBtn");
+
+let preValue = "";
+
+// Debouncing function to limit the number of API requests
+let debounceTimer;
+qrInput.addEventListener("keyup", () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    if (!qrInput.value.trim()) {
+      wrapper.classList.remove("active");
+      preValue = "";
+    }
+  }, 300);
+});
+
+generateBtn.addEventListener("click", () => {
+  let qrValue = qrInput.value.trim();
+  if (!qrValue || preValue === qrValue) return;
+  
+  preValue = qrValue;
+  generateBtn.innerText = "Processing...";
+  generateBtn.classList.add("processing"); // Add loading class
+
+  // Set the QR code image
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrValue}`;
+
+  qrImg.addEventListener("load", () => {
+    wrapper.classList.add("active"); // Show the QR code
+    generateBtn.innerText = "Generate QR Code";
+    generateBtn.classList.remove("processing"); // Remove loading class
+  });
+
+  qrImg.addEventListener("error", () => {
+    alert("Error generating QR code. Please try again.");
+    generateBtn.innerText = "Generate QR Code";
+    generateBtn.classList.remove("processing");
+  });
+});
+
+resetBtn.addEventListener("click", () => {
+  qrInput.value = ""; // Clear input field
+  qrImg.src = ""; // Clear the QR code image
+  wrapper.classList.remove("active"); // Hide the QR code and reset button
+  preValue = ""; // Reset the preValue
+});
+
+    </script>
+</body>
+</html>
